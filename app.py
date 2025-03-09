@@ -28,6 +28,30 @@ def extract_youtube_video_id(url):
         return url.split("/")[-1]
     return None
 
+def get_youtube_video_url(youtube_url):
+    """Extracts the best available video stream URL using yt-dlp."""
+    ydl_opts = {
+        "quiet": True,
+        "noplaylist": True,
+        "format": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best",
+    }
+    
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            video_info = ydl.extract_info(youtube_url, download=False)
+
+            # Check if a valid URL exists
+            if "url" in video_info:
+                return video_info["url"]
+            elif "formats" in video_info:
+                return video_info["formats"][-1]["url"]  # Get the last available format
+            else:
+                st.error("Failed to extract video stream URL. Video may be restricted or unavailable.")
+                return None
+    except Exception as e:
+        st.error(f"Error fetching video: {e}")
+        return None
+
 if youtube_url:
     video_id = extract_youtube_video_id(youtube_url)
 
@@ -39,18 +63,11 @@ if youtube_url:
 
         st.success("Video embedded successfully! 🎥 Now processing frames...")
 
-        try:
-            ydl_opts = {
-                "quiet": True,
-                "noplaylist": True,
-                "format": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]",
-            }
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                video_info = ydl.extract_info(youtube_url, download=False)
-                video_url = video_info["url"]
+        # Get direct video URL
+        video_url = get_youtube_video_url(youtube_url)
 
+        if video_url:
             cap = cv2.VideoCapture(video_url)
-
             frame_window = st.empty()  # Placeholder for displaying frames
 
             while cap.isOpened():
@@ -76,8 +93,7 @@ if youtube_url:
                 time.sleep(1)  # Process every 1 second to reduce load
 
             cap.release()
-        except Exception as e:
-            st.error(f"Error processing video: {e}")
-
+        else:
+            st.error("Could not retrieve the video stream. Try a different YouTube video.")
     else:
         st.error("Invalid YouTube URL. Please enter a valid video link.")
