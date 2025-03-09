@@ -1,10 +1,4 @@
 import asyncio
-
-try:
-    asyncio.get_running_loop()
-except RuntimeError:
-    asyncio.run(asyncio.sleep(0))
-
 import streamlit as st
 import cv2
 import numpy as np
@@ -12,10 +6,13 @@ import time
 import yt_dlp
 from ultralytics import YOLO
 
-st.title("YOLO Object Detection on YouTube Videos")
+# Fix asyncio conflict
+try:
+    asyncio.get_running_loop()
+except RuntimeError:
+    asyncio.run(asyncio.sleep(0))
 
-# Load YOLO model
-model = YOLO("yolov8n.pt")
+st.title("YOLO Object Detection on YouTube Videos")
 
 # Input for YouTube video
 youtube_url = st.text_input("Enter YouTube video URL:")
@@ -52,7 +49,7 @@ def get_youtube_video_url(youtube_url):
         st.error(f"Error fetching video: {e}")
         return None
 
-if youtube_url:
+if youtube_url: 
     video_id = extract_youtube_video_id(youtube_url)
 
     if video_id:
@@ -62,6 +59,9 @@ if youtube_url:
         """, unsafe_allow_html=True)
 
         st.success("Video embedded successfully! 🎥 Now processing frames...")
+
+        # Load YOLO Model only after URL is entered
+        model = YOLO("yolov8n.pt")
 
         # Get direct video URL
         video_url = get_youtube_video_url(youtube_url)
