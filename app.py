@@ -10,9 +10,11 @@ st.title("YOLO Object Detection on YouTube Videos")
 # Load YOLO model
 model = YOLO("yolov8n.pt")
 
+# Input for YouTube video
 youtube_url = st.text_input("Enter YouTube video URL:")
 
 def extract_youtube_video_id(url):
+    """Extract the video ID from a YouTube URL."""
     if "youtube.com" in url:
         return url.split("v=")[-1].split("&")[0]
     elif "youtu.be" in url:
@@ -42,7 +44,7 @@ if youtube_url:
 
             cap = cv2.VideoCapture(video_url)
 
-            frame_window = st.empty()
+            frame_window = st.empty()  # Placeholder for displaying frames
 
             while cap.isOpened():
                 ret, frame = cap.read()
@@ -64,7 +66,7 @@ if youtube_url:
                 frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 frame_window.image(frame_rgb, channels="RGB")
 
-                time.sleep(1)
+                time.sleep(1)  # Process every 1 second to reduce load
 
             cap.release()
         except Exception as e:
