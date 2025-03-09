@@ -4,6 +4,9 @@ import numpy as np
 import time
 import yt_dlp
 from ultralytics import YOLO
+import nest_asyncio
+
+nest_asyncio.apply()  # Prevent asyncio conflicts
 
 st.title("YOLO Object Detection on YouTube Videos")
 
@@ -33,9 +36,12 @@ if youtube_url:
 
         st.success("Video embedded successfully! 🎥 Now processing frames...")
 
-        # Capture frames from the YouTube live stream
         try:
-            ydl_opts = {"quiet": True}
+            ydl_opts = {
+                "quiet": True,
+                "noplaylist": True,
+                "format": "best[ext=mp4]",
+            }
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 video_info = ydl.extract_info(youtube_url, download=False)
                 video_url = video_info["url"]
@@ -68,7 +74,7 @@ if youtube_url:
                 frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 frame_window.image(frame_rgb, channels="RGB")
 
-                time.sleep(1)  # Process every 1 seconds to reduce load
+                time.sleep(1)  # Process every 1 second to reduce load
 
             cap.release()
         except Exception as e:
