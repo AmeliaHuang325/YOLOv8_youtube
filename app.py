@@ -1,3 +1,10 @@
+import asyncio
+
+try:
+    asyncio.get_running_loop()
+except RuntimeError:
+    asyncio.run(asyncio.sleep(0))
+
 import streamlit as st
 import cv2
 import numpy as np
