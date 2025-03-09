@@ -1,3 +1,4 @@
+import os
 import asyncio
 import streamlit as st
 import cv2
@@ -6,11 +7,15 @@ import time
 import yt_dlp
 from ultralytics import YOLO
 
-# Fix asyncio conflict
+# Suppress unnecessary PyTorch debugging messages
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+os.environ["PYTHONWARNINGS"] = "ignore"
+
+# Fix asyncio event loop conflict
 try:
     asyncio.get_running_loop()
 except RuntimeError:
-    asyncio.run(asyncio.sleep(0))
+    asyncio.set_event_loop(asyncio.new_event_loop())
 
 st.title("YOLO Object Detection on YouTube Videos")
 
@@ -49,7 +54,7 @@ def get_youtube_video_url(youtube_url):
         st.error(f"Error fetching video: {e}")
         return None
 
-if youtube_url: 
+if youtube_url:  # Only load YOLO when a URL is provided
     video_id = extract_youtube_video_id(youtube_url)
 
     if video_id:
